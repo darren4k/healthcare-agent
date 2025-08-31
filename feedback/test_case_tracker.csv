@@ -1,0 +1,50 @@
+Test_ID,Test_Case_Name,Workflow_Area,Test_Type,Priority,Status,Environment,Assigned_To,Date_Created,Date_Last_Run,Date_Last_Updated,Expected_Result,Actual_Result,Pass_Fail,Issues_Found,Automation_Coverage,Notes,Prerequisites,Test_Steps,Related_Requirements
+TC001,User Authentication Workflow,Authentication,Functional,High,Active,Development,John.Smith,2025-08-01,2025-08-30,2025-08-30,User successfully logs in,User successfully logs in,Pass,,Manual,Basic login test,Valid credentials,"1. Navigate to login page
+2. Enter valid credentials
+3. Click login button",REQ-001
+TC002,Password Reset Flow,Authentication,Functional,High,Active,Development,Jane.Doe,2025-08-01,2025-08-29,2025-08-29,Password reset email sent,Password reset email sent,Pass,,Automated,Password recovery test,Registered user account,"1. Click 'Forgot Password'
+2. Enter email address
+3. Verify email sent",REQ-002
+TC003,Patient Data Entry,Data Management,Functional,Critical,Active,Staging,Mike.Johnson,2025-08-02,2025-08-30,2025-08-30,Patient record created successfully,Patient record created successfully,Pass,,Manual,Core data entry workflow,Valid patient information,"1. Navigate to patient form
+2. Fill required fields
+3. Submit form
+4. Verify record creation",REQ-003
+TC004,API Rate Limiting,API,Performance,Medium,Active,Staging,Sarah.Wilson,2025-08-03,2025-08-28,2025-08-28,Rate limit enforced correctly,Rate limit enforced correctly,Pass,,Automated,API throttling validation,API access credentials,"1. Send requests exceeding rate limit
+2. Verify 429 response
+3. Check retry-after header",REQ-004
+TC005,Database Backup Verification,Infrastructure,Reliability,Critical,Active,Production,Tom.Brown,2025-08-04,2025-08-30,2025-08-30,Backup completed successfully,Backup completed successfully,Pass,,Manual,Daily backup process,Database access,"1. Initiate backup process
+2. Monitor completion
+3. Verify backup integrity",REQ-005
+TC006,Load Testing - 100 Concurrent Users,Performance,Load,High,Active,Staging,Lisa.Garcia,2025-08-05,2025-08-29,2025-08-29,System handles load without degradation,System handles load without degradation,Pass,,Automated,Stress testing,Load testing tools,"1. Configure 100 virtual users
+2. Execute load test
+3. Monitor response times
+4. Check error rates",REQ-006
+TC007,Cross-browser Compatibility,UI,Compatibility,Medium,Active,Staging,David.Lee,2025-08-06,2025-08-27,2025-08-27,Application works across all browsers,Application works across all browsers,Pass,,Manual,Browser compatibility check,Multiple browsers installed,"1. Test in Chrome
+2. Test in Firefox
+3. Test in Safari
+4. Test in Edge",REQ-007
+TC008,Security Vulnerability Scan,Security,Security,Critical,Active,Staging,Emma.Taylor,2025-08-07,2025-08-30,2025-08-30,No critical vulnerabilities found,2 medium vulnerabilities found,Fail,XSS potential in search field,Automated,Security assessment,Security scanning tools,"1. Run OWASP ZAP scan
+2. Review results
+3. Categorize findings",REQ-008
+TC009,Mobile Responsiveness,UI,Responsive,Medium,Active,Development,Alex.Chen,2025-08-08,2025-08-26,2025-08-26,UI adapts properly to mobile screens,UI adapts properly to mobile screens,Pass,,Manual,Mobile device testing,Mobile devices/emulators,"1. Test on phone screen
+2. Test on tablet screen
+3. Verify touch interactions",REQ-009
+TC010,Data Export Functionality,Reports,Functional,Low,Pending,Development,Rachel.Wang,2025-08-09,Not Run,2025-08-09,Data exports in correct format,Not tested yet,Not Run,,Manual,Export feature validation,Sample data in system,"1. Select data range
+2. Choose export format
+3. Download file
+4. Verify content",REQ-010
+TC011,Email Notification System,Notifications,Integration,Medium,Active,Staging,Kevin.Miller,2025-08-10,2025-08-29,2025-08-29,Notifications sent to correct recipients,Notifications sent to correct recipients,Pass,,Automated,Email delivery testing,SMTP configuration,"1. Trigger notification event
+2. Check email delivery
+3. Verify email content",REQ-011
+TC012,Session Timeout Handling,Security,Security,High,Active,Staging,Nicole.Davis,2025-08-11,2025-08-28,2025-08-28,User redirected to login after timeout,User redirected to login after timeout,Pass,,Manual,Session management test,Active user session,"1. Log in to application
+2. Wait for session timeout
+3. Attempt to access protected page",REQ-012
+TC013,File Upload Validation,Upload,Functional,Medium,Failed,Development,Jason.Rodriguez,2025-08-12,2025-08-25,2025-08-25,Only allowed file types accepted,System accepts malicious files,Fail,File type validation not working,Manual,File upload security,Test files of various types,"1. Attempt to upload allowed file
+2. Attempt to upload blocked file
+3. Verify validation messages",REQ-013
+TC014,Database Connection Failover,Infrastructure,Reliability,Critical,Active,Staging,Amanda.Thompson,2025-08-13,2025-08-30,2025-08-30,System switches to backup database,System switches to backup database,Pass,,Manual,Failover mechanism test,Database cluster setup,"1. Simulate primary DB failure
+2. Monitor system response
+3. Verify backup DB activation",REQ-014
+TC015,Accessibility Compliance,UI,Accessibility,Medium,Active,Development,Mark.Anderson,2025-08-14,2025-08-27,2025-08-27,WCAG 2.1 AA compliance achieved,Some contrast issues found,Fail,Color contrast below standards,Manual,Accessibility validation,Screen reader software,"1. Run accessibility scanner
+2. Test with screen reader
+3. Check keyboard navigation",REQ-015
