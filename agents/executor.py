@@ -9,6 +9,12 @@ from playwright.async_api import Page, TimeoutError as PlaywrightTimeoutError
 
 logger = logging.getLogger(__name__)
 
+# Import WebSocket manager (will be None if not available)
+try:
+    from api.websocket import ws_manager
+except ImportError:
+    ws_manager = None
+
 
 class ExecutorAgent:
     """Agent that executes browser automation plans step by step."""
@@ -95,6 +101,17 @@ class ExecutorAgent:
 
         logger.info(f"Executing step {step_number}: {action} - {step['description']}")
 
+        # Send WebSocket update: step started
+        if ws_manager:
+            total_steps = len(self.execution_history) + 10  # Estimate if not known
+            await ws_manager.send_step_started(
+                task_id,
+                step_number,
+                total_steps,
+                action,
+                step["description"]
+            )
+
         result = {
             "step_number": step_number,
             "action": action,
@@ -141,14 +158,25 @@ class ExecutorAgent:
                 await asyncio.sleep(wait_time)
 
             # Take screenshot if requested
+            screenshot_url = None
             if step.get("screenshot_after", False):
                 screenshot_path = await self._take_screenshot(
                     f"step_{step_number}",
                     task_id
                 )
                 result["screenshot"] = str(screenshot_path)
+                screenshot_url = f"/screenshots/{screenshot_path.name}"
 
             logger.info(f"Step {step_number} completed successfully")
+
+            # Send WebSocket update: step completed
+            if ws_manager:
+                await ws_manager.send_step_completed(
+                    task_id,
+                    step_number,
+                    len(self.execution_history) + 1,
+                    screenshot_url
+                )
 
         except Exception as e:
             logger.error(f"Step {step_number} failed: {e}", exc_info=True)
@@ -156,14 +184,25 @@ class ExecutorAgent:
             result["error"] = str(e)
 
             # Capture error screenshot
+            error_screenshot_url = None
             try:
                 screenshot_path = await self._take_screenshot(
                     f"step_{step_number}_error",
                     task_id
                 )
                 result["error_screenshot"] = str(screenshot_path)
+                error_screenshot_url = f"/screenshots/{screenshot_path.name}"
             except:
                 pass
+
+            # Send WebSocket update: step failed
+            if ws_manager:
+                await ws_manager.send_step_failed(
+                    task_id,
+                    step_number,
+                    str(e),
+                    error_screenshot_url
+                )
 
         return result
 
