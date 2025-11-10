@@ -9,6 +9,7 @@ from core.config import settings
 from core.schema import HealthCheckResponse
 from database.session import init_db
 from api.intake import router as intake_router
+from api.feedback import router as feedback_router
 
 # Configure logging
 logging.basicConfig(
@@ -61,6 +62,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(intake_router)
+app.include_router(feedback_router)
 
 
 @app.get("/", response_model=HealthCheckResponse)
