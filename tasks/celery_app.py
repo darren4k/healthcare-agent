@@ -1,5 +1,6 @@
 """Celery application configuration."""
 from celery import Celery
+from celery.schedules import crontab
 import os
 
 # Get Redis URL from environment
@@ -10,7 +11,7 @@ celery_app = Celery(
     'healthcare_agent',
     broker=REDIS_URL,
     backend=REDIS_URL,
-    include=['tasks.worker']
+    include=['tasks.worker', 'tasks.scheduled']
 )
 
 # Configure Celery
@@ -30,4 +31,44 @@ celery_app.conf.update(
 celery_app.conf.task_routes = {
     'tasks.worker.submit_note_to_emr': {'queue': 'browser_automation'},
     'tasks.worker.process_email_batch': {'queue': 'default'},
+    'tasks.scheduled.*': {'queue': 'scheduled'},
+}
+
+# Celery Beat schedule for periodic tasks
+celery_app.conf.beat_schedule = {
+    # Nightly batch processing at 11 PM
+    'process-nightly-batch': {
+        'task': 'tasks.scheduled.process_nightly_batch',
+        'schedule': crontab(hour=23, minute=0),
+    },
+    # Daily summary at 8 AM
+    'send-daily-summary': {
+        'task': 'tasks.scheduled.send_daily_summary',
+        'schedule': crontab(hour=8, minute=0),
+    },
+    # Weekly patient summary on Sundays at 6 PM
+    'generate-weekly-summary': {
+        'task': 'tasks.scheduled.generate_weekly_patient_summary',
+        'schedule': crontab(hour=18, minute=0, day_of_week=0),
+    },
+    # Cleanup old data weekly on Sundays at 2 AM
+    'cleanup-old-data': {
+        'task': 'tasks.scheduled.cleanup_old_data',
+        'schedule': crontab(hour=2, minute=0, day_of_week=0),
+    },
+    # Check for stuck tasks every hour
+    'check-stuck-tasks': {
+        'task': 'tasks.scheduled.check_stuck_tasks',
+        'schedule': crontab(minute=0),  # Every hour
+    },
+    # Retry failed tasks every 4 hours
+    'retry-failed-tasks': {
+        'task': 'tasks.scheduled.retry_failed_tasks',
+        'schedule': crontab(minute=0, hour='*/4'),  # Every 4 hours
+    },
+    # Cleanup old screenshots daily at 3 AM
+    'cleanup-screenshots': {
+        'task': 'tasks.worker.cleanup_old_screenshots',
+        'schedule': crontab(hour=3, minute=0),
+    },
 }

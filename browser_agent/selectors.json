@@ -33,13 +33,194 @@
       "back_to_chart": "a.btn.btn-primary"
     }
   },
+  "webpt": {
+    "base_url": "https://www.webpt.com",
+    "login": {
+      "username": "input[name='username']",
+      "password": "input[name='password']",
+      "submit": "button#login-button",
+      "alternatives": {
+        "username": ["input#email", "input[type='email']"],
+        "password": ["input#password", "input[type='password']"],
+        "submit": ["button[type='submit']", "input[type='submit']"]
+      }
+    },
+    "navigation": {
+      "dashboard": "/home",
+      "patients": "/patients",
+      "schedule": "/schedule",
+      "patient_search": "/patients/search",
+      "documentation": "/documentation"
+    },
+    "patients": {
+      "search_input": "input#patient-search",
+      "search_button": "button.search-submit",
+      "patient_row": "div.patient-card",
+      "patient_name": "span.patient-name",
+      "open_chart": "button.open-chart"
+    },
+    "soap_form": {
+      "note_type_dropdown": "select#note-type",
+      "visit_date": "input#visit-date",
+      "visit_type": "select#visit-type",
+      "subjective": "textarea#subjective-text",
+      "objective": "textarea#objective-text",
+      "assessment": "textarea#assessment-text",
+      "plan": "textarea#plan-text",
+      "save_draft": "button#save-draft",
+      "save_final": "button#save-final",
+      "alternatives": {
+        "subjective": ["textarea[name='subjective']", "div#subjective-editor"],
+        "objective": ["textarea[name='objective']", "div#objective-editor"],
+        "assessment": ["textarea[name='assessment']", "div#assessment-editor"],
+        "plan": ["textarea[name='plan']", "div#plan-editor"]
+      }
+    },
+    "wait_for_elements": {
+      "dashboard_loaded": "div.dashboard-container",
+      "chart_loaded": "div.patient-chart",
+      "form_loaded": "form#soap-note-form"
+    }
+  },
+  "theraoffice": {
+    "base_url": "https://www.theraoffice.com",
+    "login": {
+      "username": "input#txtUsername",
+      "password": "input#txtPassword",
+      "submit": "input#btnLogin",
+      "alternatives": {
+        "username": ["input[name='username']", "input.username-field"],
+        "password": ["input[name='password']", "input.password-field"],
+        "submit": ["button#login", "input[type='submit']"]
+      }
+    },
+    "navigation": {
+      "dashboard": "/Dashboard",
+      "patients": "/Patients",
+      "schedule": "/Schedule",
+      "documentation": "/Documentation/NewNote"
+    },
+    "patients": {
+      "search_input": "input#patientSearchBox",
+      "search_button": "button#searchPatientBtn",
+      "patient_list": "table#patientTable",
+      "patient_row": "tr.patient-row",
+      "select_patient": "a.select-patient-link"
+    },
+    "soap_form": {
+      "visit_date": "input#visitDate",
+      "visit_type": "select#visitType",
+      "subjective": "textarea#subjectiveField",
+      "objective": "textarea#objectiveField",
+      "assessment": "textarea#assessmentField",
+      "plan": "textarea#planField",
+      "provider_signature": "input#providerSignature",
+      "save_draft": "button#saveDraft",
+      "save_final": "button#saveFinal",
+      "alternatives": {
+        "subjective": ["textarea[name='Subjective']", "#SubjectiveTextArea"],
+        "objective": ["textarea[name='Objective']", "#ObjectiveTextArea"],
+        "assessment": ["textarea[name='Assessment']", "#AssessmentTextArea"],
+        "plan": ["textarea[name='Plan']", "#PlanTextArea"]
+      }
+    },
+    "wait_for_elements": {
+      "dashboard_loaded": "div#dashboard-content",
+      "patient_loaded": "div#patient-header",
+      "form_loaded": "div#note-form-container"
+    }
+  },
+  "generic_emr": {
+    "description": "Fallback selectors using common patterns",
+    "base_url": "CONFIGURE_IN_ENV",
+    "login": {
+      "username_patterns": [
+        "input#username",
+        "input#user",
+        "input#email",
+        "input[name='username']",
+        "input[name='user']",
+        "input[name='email']",
+        "input[type='email']",
+        "input[placeholder*='username' i]",
+        "input[placeholder*='email' i]"
+      ],
+      "password_patterns": [
+        "input#password",
+        "input#pass",
+        "input[name='password']",
+        "input[name='pass']",
+        "input[type='password']",
+        "input[placeholder*='password' i]"
+      ],
+      "submit_patterns": [
+        "button#login",
+        "button#submit",
+        "button[type='submit']",
+        "input[type='submit']",
+        "button:has-text('log in')",
+        "button:has-text('sign in')",
+        "button:has-text('login')"
+      ]
+    },
+    "soap_form": {
+      "field_patterns": {
+        "subjective": [
+          "textarea#subjective",
+          "textarea[name='subjective']",
+          "textarea[name='Subjective']",
+          "div#subjective",
+          "//label[contains(text(), 'Subjective')]/following::textarea[1]"
+        ],
+        "objective": [
+          "textarea#objective",
+          "textarea[name='objective']",
+          "textarea[name='Objective']",
+          "div#objective",
+          "//label[contains(text(), 'Objective')]/following::textarea[1]"
+        ],
+        "assessment": [
+          "textarea#assessment",
+          "textarea[name='assessment']",
+          "textarea[name='Assessment']",
+          "div#assessment",
+          "//label[contains(text(), 'Assessment')]/following::textarea[1]"
+        ],
+        "plan": [
+          "textarea#plan",
+          "textarea[name='plan']",
+          "textarea[name='Plan']",
+          "div#plan",
+          "//label[contains(text(), 'Plan')]/following::textarea[1]"
+        ]
+      },
+      "save_patterns": [
+        "button#save",
+        "button#save-draft",
+        "button[name='save']",
+        "button[name='draft']",
+        "button:has-text('save draft')",
+        "button:has-text('save')",
+        "input[type='submit'][value*='save' i]"
+      ]
+    }
+  },
   "timeouts": {
     "default": 30000,
     "navigation": 10000,
-    "form_fill": 5000
+    "form_fill": 5000,
+    "login": 15000,
+    "page_load": 20000
   },
   "retry": {
     "max_attempts": 3,
-    "delay_ms": 1000
+    "delay_ms": 1000,
+    "exponential_backoff": true
+  },
+  "advanced_options": {
+    "enable_llm_recovery": true,
+    "enable_selector_discovery": true,
+    "screenshot_on_error": true,
+    "max_recovery_attempts": 3
   }
 }

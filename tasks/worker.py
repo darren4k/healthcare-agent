@@ -56,12 +56,14 @@ def submit_note_to_emr(self, task_id: int, headless: bool = True) -> Dict:
 
 
 @celery_app.task(name='tasks.worker.check_and_notify')
-def check_and_notify(task_id: int):
+def check_and_notify(task_id: int, recipient_email: str = None, slack_user_id: str = None):
     """
     Check task status and send notifications.
 
     Args:
         task_id: Note draft ID
+        recipient_email: Email address to notify
+        slack_user_id: Slack user ID to DM
     """
     db = SessionLocal()
 
@@ -72,13 +74,20 @@ def check_and_notify(task_id: int):
             logger.warning(f"Task {task_id} not found")
             return
 
-        if note_draft.status == TaskStatus.COMPLETED:
-            # TODO: Send notification (email/Slack)
-            logger.info(f"Task {task_id} completed. Notification would be sent here.")
-        elif note_draft.status == TaskStatus.FAILED:
-            # TODO: Send failure notification
-            logger.warning(f"Task {task_id} failed. Failure notification would be sent here.")
+        # Send notification using notification service
+        from notifications.notifier import notification_service
+        result = asyncio.run(notification_service.notify_note_completed(
+            note_draft,
+            recipient_email=recipient_email,
+            slack_user_id=slack_user_id
+        ))
 
+        logger.info(f"Notification sent for task {task_id}: {result}")
+        return result
+
+    except Exception as e:
+        logger.error(f"Failed to send notification for task {task_id}: {e}")
+        return {"email": False, "slack": False, "error": str(e)}
     finally:
         db.close()
 

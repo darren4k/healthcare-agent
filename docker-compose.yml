@@ -101,6 +101,28 @@ services:
     command: python -m mock_emr.app
     restart: unless-stopped
 
+  # Celery Beat (scheduler for periodic tasks)
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agentic_beat
+    environment:
+      - ENV=development
+      - DATABASE_URL=postgresql://agent_user:supersecure123@db:5432/agentic_db
+      - REDIS_URL=redis://redis:6379/0
+      - LLM_ENDPOINT=http://host.docker.internal:8000/infer
+    volumes:
+      - .:/app
+      - ./data/logs:/app/data/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A tasks.celery_app beat --loglevel=info
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
