@@ -1,0 +1,169 @@
+{
+  "emr_name": "hellonote",
+  "base_url": "https://app.hellonote.com",
+  "login_url": "https://app.hellonote.com/login",
+  "selectors": {
+    "login": {
+      "username_field": "input[name='email']",
+      "password_field": "input[name='password']",
+      "login_button": "button[type='submit']",
+      "success_indicator": ".dashboard-container"
+    },
+    "navigation": {
+      "patients_tab": "a[href*='/patients']",
+      "schedule_tab": "a[href*='/schedule']",
+      "documentation_tab": "a[href*='/documentation']",
+      "billing_tab": "a[href*='/billing']"
+    },
+    "patient_search": {
+      "search_input": "input[placeholder*='Search patients']",
+      "search_button": "button[aria-label='Search']",
+      "patient_result": ".patient-list-item",
+      "patient_name": ".patient-name",
+      "select_patient": "button[data-action='select-patient']"
+    },
+    "documentation": {
+      "new_note_button": "button[data-action='new-note']",
+      "note_type_dropdown": "select[name='note_type']",
+      "date_of_service": "input[name='date_of_service']",
+      "visit_type": "select[name='visit_type']",
+      "subjective_field": "textarea[name='subjective']",
+      "objective_field": "textarea[name='objective']",
+      "assessment_field": "textarea[name='assessment']",
+      "plan_field": "textarea[name='plan']",
+      "cpt_codes": "input[name='cpt_codes[]']",
+      "add_cpt_button": "button[data-action='add-cpt']",
+      "icd10_codes": "input[name='icd10_codes[]']",
+      "add_icd10_button": "button[data-action='add-icd10']",
+      "save_draft_button": "button[data-action='save-draft']",
+      "sign_note_button": "button[data-action='sign-note']",
+      "success_message": ".alert-success"
+    },
+    "scheduling": {
+      "calendar_view": ".calendar-container",
+      "new_appointment_button": "button[data-action='new-appointment']",
+      "appointment_date": "input[name='appointment_date']",
+      "appointment_time": "input[name='appointment_time']",
+      "duration": "select[name='duration']",
+      "visit_type": "select[name='visit_type']",
+      "therapist_dropdown": "select[name='therapist_id']",
+      "patient_search": "input[name='patient_search']",
+      "save_appointment": "button[data-action='save-appointment']"
+    },
+    "billing": {
+      "claims_tab": "a[href*='/billing/claims']",
+      "new_claim_button": "button[data-action='new-claim']",
+      "claim_patient": "input[name='patient_search']",
+      "claim_date": "input[name='date_of_service']",
+      "claim_cpt": "input[name='cpt_code']",
+      "claim_icd10": "input[name='icd10_code']",
+      "claim_charges": "input[name='charge_amount']",
+      "submit_claim": "button[data-action='submit-claim']",
+      "claim_status": ".claim-status"
+    },
+    "patient_intake": {
+      "new_patient_button": "button[data-action='new-patient']",
+      "first_name": "input[name='first_name']",
+      "last_name": "input[name='last_name']",
+      "date_of_birth": "input[name='date_of_birth']",
+      "phone": "input[name='phone_number']",
+      "email": "input[name='email']",
+      "address": "input[name='address']",
+      "city": "input[name='city']",
+      "state": "select[name='state']",
+      "zip": "input[name='zip_code']",
+      "insurance_name": "input[name='insurance_company']",
+      "insurance_id": "input[name='member_id']",
+      "insurance_group": "input[name='group_number']",
+      "save_patient": "button[data-action='save-patient']"
+    }
+  },
+  "workflows": {
+    "create_soap_note": [
+      {"action": "navigate", "target": "documentation_tab"},
+      {"action": "click", "target": "new_note_button"},
+      {"action": "select", "target": "note_type_dropdown", "value": "progress_note"},
+      {"action": "fill", "target": "date_of_service", "value": "{date_of_service}"},
+      {"action": "select", "target": "visit_type", "value": "{visit_type}"},
+      {"action": "fill", "target": "subjective_field", "value": "{subjective}"},
+      {"action": "fill", "target": "objective_field", "value": "{objective}"},
+      {"action": "fill", "target": "assessment_field", "value": "{assessment}"},
+      {"action": "fill", "target": "plan_field", "value": "{plan}"},
+      {"action": "click", "target": "save_draft_button"},
+      {"action": "wait", "target": "success_message"}
+    ],
+    "schedule_appointment": [
+      {"action": "navigate", "target": "schedule_tab"},
+      {"action": "click", "target": "new_appointment_button"},
+      {"action": "fill", "target": "patient_search", "value": "{patient_name}"},
+      {"action": "wait", "duration": 1000},
+      {"action": "click", "target": "patient_result"},
+      {"action": "fill", "target": "appointment_date", "value": "{date}"},
+      {"action": "fill", "target": "appointment_time", "value": "{time}"},
+      {"action": "select", "target": "duration", "value": "{duration}"},
+      {"action": "select", "target": "visit_type", "value": "{visit_type}"},
+      {"action": "select", "target": "therapist_dropdown", "value": "{therapist_id}"},
+      {"action": "click", "target": "save_appointment"},
+      {"action": "wait", "target": "success_message"}
+    ],
+    "submit_claim": [
+      {"action": "navigate", "target": "billing_tab"},
+      {"action": "click", "target": "claims_tab"},
+      {"action": "click", "target": "new_claim_button"},
+      {"action": "fill", "target": "claim_patient", "value": "{patient_name}"},
+      {"action": "wait", "duration": 1000},
+      {"action": "click", "target": "patient_result"},
+      {"action": "fill", "target": "claim_date", "value": "{date_of_service}"},
+      {"action": "fill", "target": "claim_cpt", "value": "{cpt_code}"},
+      {"action": "fill", "target": "claim_icd10", "value": "{icd10_code}"},
+      {"action": "fill", "target": "claim_charges", "value": "{charge_amount}"},
+      {"action": "click", "target": "submit_claim"},
+      {"action": "wait", "target": "claim_status"}
+    ],
+    "create_patient_intake": [
+      {"action": "navigate", "target": "patients_tab"},
+      {"action": "click", "target": "new_patient_button"},
+      {"action": "fill", "target": "first_name", "value": "{first_name}"},
+      {"action": "fill", "target": "last_name", "value": "{last_name}"},
+      {"action": "fill", "target": "date_of_birth", "value": "{date_of_birth}"},
+      {"action": "fill", "target": "phone", "value": "{phone_number}"},
+      {"action": "fill", "target": "email", "value": "{email}"},
+      {"action": "fill", "target": "address", "value": "{address}"},
+      {"action": "fill", "target": "city", "value": "{city}"},
+      {"action": "select", "target": "state", "value": "{state}"},
+      {"action": "fill", "target": "zip", "value": "{zip_code}"},
+      {"action": "fill", "target": "insurance_name", "value": "{insurance_company}"},
+      {"action": "fill", "target": "insurance_id", "value": "{member_id}"},
+      {"action": "fill", "target": "insurance_group", "value": "{group_number}"},
+      {"action": "click", "target": "save_patient"},
+      {"action": "wait", "target": "success_message"}
+    ]
+  },
+  "wait_strategies": {
+    "default_timeout": 30000,
+    "navigation_timeout": 10000,
+    "field_fill_delay": 100,
+    "retry_count": 3,
+    "retry_delay": 2000
+  },
+  "authentication": {
+    "method": "form",
+    "requires_mfa": false,
+    "session_timeout_minutes": 30
+  },
+  "features": {
+    "supports_draft_notes": true,
+    "supports_telehealth": true,
+    "supports_group_therapy": true,
+    "supports_billing_integration": true,
+    "supports_insurance_verification": true,
+    "supports_outcome_measures": true
+  },
+  "api_integration": {
+    "has_rest_api": true,
+    "api_base_url": "https://api.hellonote.com/v1",
+    "api_documentation": "https://docs.hellonote.com/api",
+    "requires_api_key": true,
+    "rate_limit": "1000 requests/hour"
+  }
+}
