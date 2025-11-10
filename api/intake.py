@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime
 import logging
+import os
 
 from core.schema import NoteIntakeRequest, NoteIntakeResponse, TaskStatusResponse, SOAPComponents
 from core.parser import soap_parser
@@ -12,6 +13,9 @@ from backend.utils.audit import logger as audit_logger
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["intake"])
+
+# Flag to enable/disable browser automation
+ENABLE_BROWSER_AUTOMATION = os.getenv('ENABLE_BROWSER_AUTOMATION', 'true').lower() == 'true'
 
 
 @router.post("/intake", response_model=NoteIntakeResponse, status_code=status.HTTP_201_CREATED)
@@ -147,6 +151,36 @@ async def submit_note(
                     "duration_seconds": task_log.duration_seconds
                 }
             )
+
+            # Step 4.5: Trigger browser automation (if enabled)
+            if ENABLE_BROWSER_AUTOMATION:
+                try:
+                    from tasks.worker import submit_note_to_emr
+
+                    # Submit to Celery for async processing
+                    task = submit_note_to_emr.delay(note_draft.id)
+
+                    logger.info(
+                        f"Browser automation task queued for note draft {note_draft.id}. "
+                        f"Celery task ID: {task.id}"
+                    )
+
+                    # Audit log
+                    audit_logger.log_info(
+                        event="browser_automation_queued",
+                        user_id=request.submitted_by,
+                        patient_id=request.patient_id,
+                        metadata={
+                            "note_draft_id": note_draft.id,
+                            "celery_task_id": task.id
+                        }
+                    )
+                except Exception as celery_error:
+                    logger.warning(
+                        f"Failed to queue browser automation for note draft {note_draft.id}: {celery_error}"
+                    )
+                    # Don't fail the request if Celery is unavailable
+                    # Note will remain in LLM_COMPLETE state
 
         except Exception as llm_error:
             # Handle LLM processing errors

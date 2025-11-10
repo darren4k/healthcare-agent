@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Mock EMR{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 1.5rem;">Dashboard</h2>
+
+<div class="card">
+    <h3 style="margin-bottom: 1rem;">Quick Actions</h3>
+    <div style="display: flex; gap: 1rem;">
+        <a href="{{ url_for('patients') }}" class="btn btn-primary">View All Patients</a>
+        <a href="{{ url_for('patients') }}?search=" class="btn btn-secondary">Search Patients</a>
+    </div>
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom: 1rem;">Recent Patients</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Patient ID</th>
+                <th>Name</th>
+                <th>Date of Birth</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient_id, patient in patients.items() %}
+            <tr>
+                <td><strong>{{ patient_id }}</strong></td>
+                <td>{{ patient.first_name }} {{ patient.last_name }}</td>
+                <td>{{ patient.dob }}</td>
+                <td>
+                    <a href="{{ url_for('patient_detail', patient_id=patient_id) }}" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">
+                        View Chart
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

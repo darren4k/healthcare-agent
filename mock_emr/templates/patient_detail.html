@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}{{ patient.first_name }} {{ patient.last_name }} - Mock EMR{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('patients') }}" style="color: #2563eb; text-decoration: none;">← Back to Patients</a>
+</div>
+
+<div class="card">
+    <h2 style="margin-bottom: 1rem;">{{ patient.first_name }} {{ patient.last_name }}</h2>
+    <p><strong>Patient ID:</strong> {{ patient_id }}</p>
+    <p><strong>Date of Birth:</strong> {{ patient.dob }}</p>
+
+    <div style="margin-top: 1.5rem;">
+        <a href="{{ url_for('new_note', patient_id=patient_id) }}" class="btn btn-primary">
+            + New SOAP Note
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom: 1rem;">SOAP Notes ({{ notes|length }})</h3>
+
+    {% if notes %}
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Created By</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for note in notes %}
+            <tr>
+                <td>{{ note.visit_date }}</td>
+                <td>{{ note.visit_type }}</td>
+                <td>{{ note.created_by }}</td>
+                <td>
+                    <span style="padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem; {% if note.status == 'final' %}background: #d1fae5; color: #065f46;{% else %}background: #fef3c7; color: #92400e;{% endif %}">
+                        {{ note.status|title }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #6b7280; text-align: center; padding: 2rem;">No notes recorded yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

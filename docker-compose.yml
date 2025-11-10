@@ -64,26 +64,42 @@ services:
     command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
     restart: unless-stopped
 
-  # Celery Worker (for async task processing)
-  # Uncomment when ready to implement async processing
-  # worker:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: agentic_worker
-  #   environment:
-  #     - ENV=development
-  #     - DATABASE_URL=postgresql://agent_user:supersecure123@db:5432/agentic_db
-  #     - REDIS_URL=redis://redis:6379/0
-  #     - LLM_ENDPOINT=http://host.docker.internal:8000/infer
-  #   volumes:
-  #     - .:/app
-  #     - ./data/logs:/app/data/logs
-  #   depends_on:
-  #     - db
-  #     - redis
-  #   command: celery -A tasks.scheduler worker --loglevel=info
-  #   restart: unless-stopped
+  # Celery Worker (browser automation)
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agentic_worker
+    environment:
+      - ENV=development
+      - DATABASE_URL=postgresql://agent_user:supersecure123@db:5432/agentic_db
+      - REDIS_URL=redis://redis:6379/0
+      - LLM_ENDPOINT=http://host.docker.internal:8000/infer
+      - ENABLE_BROWSER_AUTOMATION=true
+    volumes:
+      - .:/app
+      - ./data/logs:/app/data/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A tasks.celery_app worker --loglevel=info --concurrency=2
+    restart: unless-stopped
+
+  # Mock EMR System (for testing)
+  mock_emr:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mock_emr
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python -m mock_emr.app
+    restart: unless-stopped
 
 volumes:
   postgres_data:

@@ -1,0 +1,45 @@
+{
+  "mock_emr": {
+    "base_url": "http://localhost:5000",
+    "login": {
+      "username": "#username",
+      "password": "#password",
+      "submit": "button[type='submit']"
+    },
+    "navigation": {
+      "dashboard": "/dashboard",
+      "patients": "/patients",
+      "patient_detail": "/patients/{patient_id}",
+      "new_note": "/patients/{patient_id}/notes/new"
+    },
+    "patients": {
+      "search_input": "#search",
+      "search_button": "button[type='submit']",
+      "patient_row": "table tbody tr",
+      "view_chart_link": "a.btn.btn-secondary"
+    },
+    "soap_form": {
+      "visit_date": "#visit-date",
+      "visit_type": "#visit-type",
+      "subjective": "#subjective",
+      "objective": "#objective",
+      "assessment": "#assessment",
+      "plan": "#plan",
+      "save_draft": "button[name='action'][value='draft']",
+      "save_final": "button[name='action'][value='final']"
+    },
+    "success": {
+      "alert": "div.alert-success",
+      "back_to_chart": "a.btn.btn-primary"
+    }
+  },
+  "timeouts": {
+    "default": 30000,
+    "navigation": 10000,
+    "form_fill": 5000
+  },
+  "retry": {
+    "max_attempts": 3,
+    "delay_ms": 1000
+  }
+}

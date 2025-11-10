@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Patients - Mock EMR{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 1.5rem;">Patient List</h2>
+
+<div class="card">
+    <form method="GET" action="{{ url_for('patients') }}" id="search-form">
+        <div class="form-group">
+            <label for="search">Search Patients</label>
+            <input type="text"
+                   id="search"
+                   name="search"
+                   placeholder="Search by ID, name..."
+                   value="{{ search_query }}"
+                   style="width: 100%;">
+        </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom: 1rem;">
+        {% if search_query %}
+        Search Results ({{ patients|length }})
+        {% else %}
+        All Patients ({{ patients|length }})
+        {% endif %}
+    </h3>
+
+    {% if patients %}
+    <table>
+        <thead>
+            <tr>
+                <th>Patient ID</th>
+                <th>Name</th>
+                <th>Date of Birth</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient_id, patient in patients.items() %}
+            <tr>
+                <td><strong>{{ patient_id }}</strong></td>
+                <td>{{ patient.first_name }} {{ patient.last_name }}</td>
+                <td>{{ patient.dob }}</td>
+                <td>
+                    <a href="{{ url_for('patient_detail', patient_id=patient_id) }}" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">
+                        View Chart
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #6b7280; text-align: center; padding: 2rem;">No patients found.</p>
+    {% endif %}
+</div>
+{% endblock %}

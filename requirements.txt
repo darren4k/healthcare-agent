@@ -43,3 +43,6 @@ aiofiles>=23.2.1
 
 # Logging and Monitoring
 python-json-logger>=2.0.7
+
+# Mock EMR (Flask)
+flask>=3.0.0

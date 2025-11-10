@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Note Saved - Mock EMR{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="alert alert-success">
+        <h3 style="margin-bottom: 0.5rem;">✓ SOAP Note Saved Successfully</h3>
+        <p>Note status: <strong>{{ note.status|title }}</strong></p>
+    </div>
+
+    <h3 style="margin-bottom: 1rem;">Note Details</h3>
+    <p><strong>Patient:</strong> {{ patient_id }}</p>
+    <p><strong>Visit Date:</strong> {{ note.visit_date }}</p>
+    <p><strong>Visit Type:</strong> {{ note.visit_type }}</p>
+    <p><strong>Created By:</strong> {{ note.created_by }}</p>
+
+    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e5e7eb;">
+        <h4 style="margin-bottom: 0.75rem;">SOAP Content</h4>
+
+        <div style="background: #f9fafb; padding: 1rem; border-radius: 6px; margin-bottom: 0.75rem;">
+            <strong>Subjective:</strong>
+            <p style="margin-top: 0.5rem;">{{ note.subjective }}</p>
+        </div>
+
+        <div style="background: #f9fafb; padding: 1rem; border-radius: 6px; margin-bottom: 0.75rem;">
+            <strong>Objective:</strong>
+            <p style="margin-top: 0.5rem;">{{ note.objective }}</p>
+        </div>
+
+        <div style="background: #f9fafb; padding: 1rem; border-radius: 6px; margin-bottom: 0.75rem;">
+            <strong>Assessment:</strong>
+            <p style="margin-top: 0.5rem;">{{ note.assessment }}</p>
+        </div>
+
+        <div style="background: #f9fafb; padding: 1rem; border-radius: 6px;">
+            <strong>Plan:</strong>
+            <p style="margin-top: 0.5rem;">{{ note.plan }}</p>
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem;">
+        <a href="{{ url_for('patient_detail', patient_id=patient_id) }}" class="btn btn-primary">
+            Back to Patient Chart
+        </a>
+        <a href="{{ url_for('new_note', patient_id=patient_id) }}" class="btn btn-secondary">
+            Create Another Note
+        </a>
+    </div>
+</div>
+{% endblock %}

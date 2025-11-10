@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}New SOAP Note - Mock EMR{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('patient_detail', patient_id=patient_id) }}" style="color: #2563eb; text-decoration: none;">← Back to Patient Chart</a>
+</div>
+
+<div class="card">
+    <h2 style="margin-bottom: 0.5rem;">New SOAP Note</h2>
+    <p style="color: #6b7280; margin-bottom: 1.5rem;">
+        Patient: <strong>{{ patient.first_name }} {{ patient.last_name }}</strong> ({{ patient_id }})
+    </p>
+
+    <form method="POST" id="soap-form">
+        <div class="form-group">
+            <label for="visit-date">Visit Date *</label>
+            <input type="date" id="visit-date" name="visit_date" value="{{ today }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="visit-type">Visit Type *</label>
+            <select id="visit-type" name="visit_type" required>
+                <option value="PT">Physical Therapy (PT)</option>
+                <option value="OT">Occupational Therapy (OT)</option>
+                <option value="SLP">Speech-Language Pathology (SLP)</option>
+                <option value="Nursing">Nursing</option>
+                <option value="Home Health">Home Health</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="subjective">Subjective *</label>
+            <textarea id="subjective" name="subjective" placeholder="Patient's reported symptoms and complaints..." required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="objective">Objective *</label>
+            <textarea id="objective" name="objective" placeholder="Measurable observations, vitals, tests..." required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="assessment">Assessment *</label>
+            <textarea id="assessment" name="assessment" placeholder="Clinical interpretation and progress evaluation..." required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="plan">Plan *</label>
+            <textarea id="plan" name="plan" placeholder="Treatment plan, interventions, goals..." required></textarea>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" name="action" value="draft" class="btn btn-secondary">
+                Save as Draft
+            </button>
+            <button type="submit" name="action" value="final" class="btn btn-primary">
+                Sign and Finalize
+            </button>
+            <a href="{{ url_for('patient_detail', patient_id=patient_id) }}" class="btn btn-secondary">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
