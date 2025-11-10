@@ -12,6 +12,7 @@ from core.schema import HealthCheckResponse
 from database.session import init_db
 from api.intake import router as intake_router
 from api.feedback import router as feedback_router
+from api.scheduling import router as scheduling_router
 from api.websocket import ws_manager
 
 # Configure logging
@@ -66,6 +67,7 @@ app.add_middleware(
 # Include routers
 app.include_router(intake_router)
 app.include_router(feedback_router)
+app.include_router(scheduling_router)
 
 # Mount static directories for screenshots, videos, and traces
 logs_dir = Path("data/logs")

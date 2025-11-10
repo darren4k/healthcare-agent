@@ -3,11 +3,13 @@ import logging
 from datetime import datetime, timedelta
 from typing import List, Dict
 from sqlalchemy import and_, func
+import asyncio
 
 from tasks.celery_app import celery_app
 from database.session import SessionLocal
 from database.models import NoteDraft, TaskStatus, Patient
 from notifications.notifier import notification_service
+from core.reminder_service import ReminderService
 
 logger = logging.getLogger(__name__)
 
@@ -361,6 +363,71 @@ def retry_failed_tasks(max_age_hours: int = 24):
 
     except Exception as e:
         logger.error(f"Failed task retry failed: {e}", exc_info=True)
+        raise
+    finally:
+        db.close()
+
+
+@celery_app.task(name='tasks.scheduled.send_appointment_reminders')
+def send_appointment_reminders():
+    """
+    Send pending appointment reminders.
+    Runs every 5 minutes to check for reminders that are due.
+    """
+    logger.info("Checking for pending appointment reminders")
+    db = SessionLocal()
+
+    try:
+        reminder_service = ReminderService(db)
+
+        # Send pending reminders
+        stats = asyncio.run(reminder_service.send_pending_reminders())
+
+        logger.info(
+            f"Reminder batch complete: {stats['sent']} sent, "
+            f"{stats['failed']} failed, {stats['skipped']} skipped"
+        )
+
+        return {
+            "sent": stats['sent'],
+            "failed": stats['failed'],
+            "skipped": stats['skipped'],
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+    except Exception as e:
+        logger.error(f"Appointment reminder task failed: {e}", exc_info=True)
+        raise
+    finally:
+        db.close()
+
+
+@celery_app.task(name='tasks.scheduled.check_unconfirmed_appointments')
+def check_unconfirmed_appointments():
+    """
+    Check for unconfirmed appointments and escalate to phone calls.
+    Runs every hour.
+    """
+    logger.info("Checking for unconfirmed appointments")
+    db = SessionLocal()
+
+    try:
+        reminder_service = ReminderService(db)
+
+        # Get appointments within 2 hours without confirmation
+        unconfirmed = reminder_service.get_unconfirmed_appointments(hours_before=2)
+
+        logger.info(f"Found {len(unconfirmed)} unconfirmed appointments within 2 hours")
+
+        # TODO: Escalate to phone calls or additional notifications
+
+        return {
+            "unconfirmed_count": len(unconfirmed),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+    except Exception as e:
+        logger.error(f"Unconfirmed appointment check failed: {e}", exc_info=True)
         raise
     finally:
         db.close()

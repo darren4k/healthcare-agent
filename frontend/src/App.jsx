@@ -1,8 +1,11 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { FileText, Home, LayoutDashboard } from 'lucide-react';
+import { FileText, Home, LayoutDashboard, Activity, UserPlus } from 'lucide-react';
 import SubmitPage from './pages/SubmitPage';
 import DashboardPage from './pages/DashboardPage';
 import TaskDetailPage from './pages/TaskDetailPage';
+import LiveTasksPage from './pages/LiveTasksPage';
+import PatientIntakePage from './pages/PatientIntakePage';
+import IntakeConfirmationPage from './pages/IntakeConfirmationPage';
 
 function App() {
   return (
@@ -22,6 +25,8 @@ function App() {
                 <div className="flex space-x-4">
                   <NavLink to="/" icon={Home} label="Submit Note" />
                   <NavLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
+                  <NavLink to="/live-tasks" icon={Activity} label="Live Tasks" />
+                  <NavLink to="/patient-intake" icon={UserPlus} label="Patient Intake" />
                 </div>
               </div>
             </div>
@@ -34,6 +39,9 @@ function App() {
             <Route path="/" element={<SubmitPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/tasks/:taskId" element={<TaskDetailPage />} />
+            <Route path="/live-tasks" element={<LiveTasksPage />} />
+            <Route path="/patient-intake" element={<PatientIntakePage />} />
+            <Route path="/intake-confirmation/:intakeId" element={<IntakeConfirmationPage />} />
           </Routes>
         </main>
 
