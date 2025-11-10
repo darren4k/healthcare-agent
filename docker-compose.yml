@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: agentic_postgres
+    environment:
+      POSTGRES_USER: agent_user
+      POSTGRES_PASSWORD: supersecure123
+      POSTGRES_DB: agentic_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./data/logs:/var/log/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agent_user -d agentic_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis (for task queue)
+  redis:
+    image: redis:7-alpine
+    container_name: agentic_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # FastAPI Application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agentic_api
+    ports:
+      - "8001:8001"
+    environment:
+      - ENV=development
+      - DEBUG=true
+      - PORT=8001
+      - DATABASE_URL=postgresql://agent_user:supersecure123@db:5432/agentic_db
+      - REDIS_URL=redis://redis:6379/0
+      - LLM_ENDPOINT=http://host.docker.internal:8000/infer
+      - LOG_LEVEL=INFO
+    volumes:
+      - .:/app
+      - ./data/logs:/app/data/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+    restart: unless-stopped
+
+  # Celery Worker (for async task processing)
+  # Uncomment when ready to implement async processing
+  # worker:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: agentic_worker
+  #   environment:
+  #     - ENV=development
+  #     - DATABASE_URL=postgresql://agent_user:supersecure123@db:5432/agentic_db
+  #     - REDIS_URL=redis://redis:6379/0
+  #     - LLM_ENDPOINT=http://host.docker.internal:8000/infer
+  #   volumes:
+  #     - .:/app
+  #     - ./data/logs:/app/data/logs
+  #   depends_on:
+  #     - db
+  #     - redis
+  #   command: celery -A tasks.scheduler worker --loglevel=info
+  #   restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
