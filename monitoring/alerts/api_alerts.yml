@@ -1,0 +1,251 @@
+# Alert Rules for Healthcare Agent API
+
+groups:
+  - name: api_alerts
+    interval: 30s
+    rules:
+      # API Service Down
+      - alert: APIServiceDown
+        expr: up{job="healthcare-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "Healthcare API is down"
+          description: "The Healthcare Agent API has been down for more than 2 minutes."
+
+      # High Error Rate
+      - alert: HighAPIErrorRate
+        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High API error rate detected"
+          description: "API error rate is above 5% for the last 5 minutes. Current rate: {{ $value | humanizePercentage }}"
+
+      # High Response Time
+      - alert: HighAPIResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 10m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High API response time"
+          description: "95th percentile API response time is above 2 seconds. Current: {{ $value | humanizeDuration }}"
+
+      # High Memory Usage
+      - alert: HighAPIMemoryUsage
+        expr: (process_resident_memory_bytes{job="healthcare-api"} / 1024 / 1024 / 1024) > 4
+        for: 15m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High API memory usage"
+          description: "API is using more than 4GB of memory. Current: {{ $value | humanize }}GB"
+
+      # Too Many Requests (Rate Limiting)
+      - alert: HighRequestRate
+        expr: rate(http_requests_total[1m]) > 100
+        for: 5m
+        labels:
+          severity: info
+          component: api
+        annotations:
+          summary: "High request rate detected"
+          description: "API is receiving more than 100 requests/second. Current: {{ $value | humanize }}"
+
+  - name: celery_alerts
+    interval: 30s
+    rules:
+      # Celery Workers Down
+      - alert: CeleryWorkersDown
+        expr: celery_workers_active == 0
+        for: 5m
+        labels:
+          severity: critical
+          component: celery
+        annotations:
+          summary: "All Celery workers are down"
+          description: "No active Celery workers detected for 5 minutes."
+
+      # High Task Failure Rate
+      - alert: HighCeleryTaskFailureRate
+        expr: (rate(celery_tasks_failed_total[5m]) / rate(celery_tasks_total[5m])) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          component: celery
+        annotations:
+          summary: "High Celery task failure rate"
+          description: "More than 10% of Celery tasks are failing. Current rate: {{ $value | humanizePercentage }}"
+
+      # Task Queue Backlog
+      - alert: CeleryTaskQueueBacklog
+        expr: celery_queue_length > 1000
+        for: 15m
+        labels:
+          severity: warning
+          component: celery
+        annotations:
+          summary: "Large Celery task queue backlog"
+          description: "More than 1000 tasks in queue. Current: {{ $value }}"
+
+  - name: database_alerts
+    interval: 30s
+    rules:
+      # PostgreSQL Down
+      - alert: PostgreSQLDown
+        expr: up{job="postgresql"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database has been down for more than 2 minutes."
+
+      # High Database Connections
+      - alert: HighDatabaseConnections
+        expr: (pg_stat_database_numbackends / pg_settings_max_connections) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High database connection usage"
+          description: "More than 80% of database connections are in use. Current: {{ $value | humanizePercentage }}"
+
+      # Slow Queries
+      - alert: SlowDatabaseQueries
+        expr: rate(pg_stat_statements_mean_time_seconds[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query time is above 1 second. Current: {{ $value | humanizeDuration }}"
+
+      # Database Disk Usage
+      - alert: HighDatabaseDiskUsage
+        expr: (pg_database_size_bytes / pg_filesystem_size_bytes) > 0.85
+        for: 10m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High database disk usage"
+          description: "Database is using more than 85% of available disk space. Current: {{ $value | humanizePercentage }}"
+
+  - name: redis_alerts
+    interval: 30s
+    rules:
+      # Redis Down
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been down for more than 2 minutes."
+
+      # High Redis Memory Usage
+      - alert: HighRedisMemoryUsage
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) > 0.9
+        for: 10m
+        labels:
+          severity: warning
+          component: redis
+        annotations:
+          summary: "High Redis memory usage"
+          description: "Redis is using more than 90% of available memory. Current: {{ $value | humanizePercentage }}"
+
+      # Redis Connection Errors
+      - alert: RedisConnectionErrors
+        expr: rate(redis_rejected_connections_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          component: redis
+        annotations:
+          summary: "Redis connection rejections"
+          description: "Redis is rejecting connections. Rate: {{ $value }}/sec"
+
+  - name: system_alerts
+    interval: 30s
+    rules:
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: (100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 85
+        for: 15m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is above 85%. Current: {{ $value | humanize }}%"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.9
+        for: 15m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is above 90%. Current: {{ $value | humanizePercentage }}"
+
+      # Low Disk Space
+      - alert: LowDiskSpace
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) > 0.85
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "Low disk space"
+          description: "Disk usage is above 85%. Current: {{ $value | humanizePercentage }}"
+
+  - name: business_metrics_alerts
+    interval: 60s
+    rules:
+      # Low SOAP Note Submission Rate
+      - alert: LowSOAPNoteSubmissionRate
+        expr: rate(soap_notes_submitted_total[1h]) < 1
+        for: 2h
+        labels:
+          severity: info
+          component: business
+        annotations:
+          summary: "Low SOAP note submission rate"
+          description: "Less than 1 SOAP note per hour submitted in the last 2 hours."
+
+      # High SOAP Note Processing Failures
+      - alert: HighSOAPNoteProcessingFailures
+        expr: (rate(soap_notes_failed_total[1h]) / rate(soap_notes_submitted_total[1h])) > 0.1
+        for: 1h
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "High SOAP note processing failure rate"
+          description: "More than 10% of SOAP notes are failing to process. Current: {{ $value | humanizePercentage }}"
+
+      # Claim Submission Failures
+      - alert: HighClaimSubmissionFailures
+        expr: (rate(claims_failed_total[1h]) / rate(claims_submitted_total[1h])) > 0.15
+        for: 1h
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "High claim submission failure rate"
+          description: "More than 15% of claims are failing to submit. Current: {{ $value | humanizePercentage }}"

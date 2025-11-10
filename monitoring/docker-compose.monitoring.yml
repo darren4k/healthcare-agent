@@ -1,0 +1,183 @@
+version: '3.8'
+
+###############################################################################
+# Healthcare Agent Platform - Monitoring Stack
+# Prometheus + Grafana + Exporters for comprehensive monitoring
+#
+# Usage:
+#   docker-compose -f monitoring/docker-compose.monitoring.yml up -d
+#
+# Access:
+#   Grafana: http://localhost:3000 (admin/admin)
+#   Prometheus: http://localhost:9090
+###############################################################################
+
+networks:
+  healthcare-monitoring:
+    driver: bridge
+  healthcare-prod:
+    external: true
+    name: healthcare-agent_default
+
+volumes:
+  prometheus-data:
+  grafana-data:
+
+services:
+  # Prometheus - Metrics collection and alerting
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: healthcare-prometheus
+    restart: unless-stopped
+    networks:
+      - healthcare-monitoring
+      - healthcare-prod
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alerts:/etc/prometheus/alerts:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana - Visualization and dashboards
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: healthcare-grafana
+    restart: unless-stopped
+    networks:
+      - healthcare-monitoring
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - prometheus
+
+  # PostgreSQL Exporter
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.13.0
+    container_name: healthcare-postgres-exporter
+    restart: unless-stopped
+    networks:
+      - healthcare-monitoring
+      - healthcare-prod
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:${DB_PASSWORD}@db:5432/healthcare_agent_prod?sslmode=disable"
+    ports:
+      - "9187:9187"
+    depends_on:
+      - prometheus
+
+  # Redis Exporter
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.51.0
+    container_name: healthcare-redis-exporter
+    restart: unless-stopped
+    networks:
+      - healthcare-monitoring
+      - healthcare-prod
+    environment:
+      REDIS_ADDR: "redis:6379"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+    ports:
+      - "9121:9121"
+    depends_on:
+      - prometheus
+
+  # Nginx Exporter
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:0.11.0
+    container_name: healthcare-nginx-exporter
+    restart: unless-stopped
+    networks:
+      - healthcare-monitoring
+      - healthcare-prod
+    command:
+      - '-nginx.scrape-uri=http://nginx:80/nginx_status'
+    ports:
+      - "9113:9113"
+    depends_on:
+      - prometheus
+
+  # Node Exporter - System metrics
+  node-exporter:
+    image: prom/node-exporter:v1.6.0
+    container_name: healthcare-node-exporter
+    restart: unless-stopped
+    networks:
+      - healthcare-monitoring
+    ports:
+      - "9100:9100"
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/host'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/host:ro
+    depends_on:
+      - prometheus
+
+  # cAdvisor - Container metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    container_name: healthcare-cadvisor
+    restart: unless-stopped
+    networks:
+      - healthcare-monitoring
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+    depends_on:
+      - prometheus
+
+  # Alertmanager - Alert routing and management
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: healthcare-alertmanager
+    restart: unless-stopped
+    networks:
+      - healthcare-monitoring
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    depends_on:
+      - prometheus
